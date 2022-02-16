@@ -8,7 +8,7 @@ import { Rhino3dmLoader } from 'https://cdn.jsdelivr.net/npm/three@0.124.0/examp
 const definitionName = 'weav.gh'
 
 // Set up sliders
-const sub_slider = document.getElementById('Subdivision')
+const sub_slider = document.getElementById('sub')
 sub_slider.addEventListener('mouseup', onSliderChange, false)
 sub_slider.addEventListener('touchend', onSliderChange, false)
 
@@ -43,7 +43,7 @@ async function compute() {
 
 
 
-    const param1 = new RhinoCompute.Grasshopper.DataTree('Subdivision')
+    const param1 = new RhinoCompute.Grasshopper.DataTree('subdivision')
     console.log(sub_slider.valueAsNumber)
     param1.append([0], [sub_slider.valueAsNumber])
 
