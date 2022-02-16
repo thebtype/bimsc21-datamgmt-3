@@ -118,8 +118,9 @@ async function compute() {
           const col = colorData[1];
 
           //convert color from userstring to THREE color and assign it
-          const threeColor = new THREE.Color("rgb(" + col + ")");
-          const mat = new THREE.LineBasicMaterial({ color: threeColor });
+          //const threeColor = new THREE.Color("rgb(" + col + ")");
+          //const mat = new THREE.MeshBasicMaterial({ color: threeColor });
+          const mat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
           child.material = mat;
         }
       }
