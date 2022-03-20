@@ -5,16 +5,16 @@ import rhino3dm from "https://cdn.jsdelivr.net/npm/rhino3dm@7.11.1/rhino3dm.modu
 import { RhinoCompute } from "https://cdn.jsdelivr.net/npm/compute-rhino3d@0.13.0-beta/compute.rhino3d.module.js";
 import { Rhino3dmLoader } from "https://cdn.jsdelivr.net/npm/three@0.124.0/examples/jsm/loaders/3DMLoader.js";
 
-const definitionName = "test2.gh";
+const definitionName = "Chair_v5.gh";
 
 // Set up sliders
-const Min_slider = document.getElementById("Min");
-Min_slider.addEventListener("mouseup", onSliderChange, false);
-Min_slider.addEventListener("touchend", onSliderChange, false);
+const left_slider = document.getElementById("left_rail");
+left_slider.addEventListener("mouseup", onSliderChange, false);
+left_slider.addEventListener("touchend", onSliderChange, false);
 
-const Max_slider = document.getElementById("Max");
-Max_slider.addEventListener("mouseup", onSliderChange, false);
-Max_slider.addEventListener("touchend", onSliderChange, false);
+const right_slider = document.getElementById("right_rail");
+right_slider.addEventListener("mouseup", onSliderChange, false);
+right_slider.addEventListener("touchend", onSliderChange, false);
 
 const loader = new Rhino3dmLoader();
 loader.setLibraryPath("https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/");
@@ -27,13 +27,7 @@ rhino3dm().then(async (m) => {
   //RhinoCompute.url = getAuth( 'RHINO_COMPUTE_URL' ) // RhinoCompute server url. Use http://localhost:8081 if debugging locally.
   //RhinoCompute.apiKey = getAuth( 'RHINO_COMPUTE_KEY' )  // RhinoCompute server api key. Leave blank if debugging locally.
 
-
-  RhinoCompute.url = 'http://18.197.227.78:80/' // RhinoCompute server url. Use http://localhost:8081 if debugging locally.
-  RhinoCompute.apiKey = 'macad2022'  // RhinoCompute server api key. Leave blank if debugging locally.
-
-
-
-  //RhinoCompute.url = "http://localhost:8081/"; //if debugging locally.
+  RhinoCompute.url = "http://localhost:8081/"; //if debugging locally.
 
   // load a grasshopper file!
 
@@ -48,11 +42,11 @@ rhino3dm().then(async (m) => {
 });
 
 async function compute() {
-  const param1 = new RhinoCompute.Grasshopper.DataTree("Min");
-  param1.append([0], [Min_slider.valueAsNumber]);
+  const param1 = new RhinoCompute.Grasshopper.DataTree("left_rail");
+  param1.append([0], [left_slider.valueAsNumber]);
 
-  const param2 = new RhinoCompute.Grasshopper.DataTree("Max");
-  param2.append([0], [Max_slider.valueAsNumber]);
+  const param2 = new RhinoCompute.Grasshopper.DataTree("right_rail");
+  param2.append([0], [right_slider.valueAsNumber]);
 
   // clear values
   const trees = [];
