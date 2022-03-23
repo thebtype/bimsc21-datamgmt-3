@@ -57,9 +57,25 @@ async function compute() {
 
     const res = await RhinoCompute.Grasshopper.evaluateDefinition(definition, trees)
 
-   // console.log(res)
-
+   // layer index 1
     doc = new rhino.File3dm()
+    const layer_crvs = new rhino.Layer()
+    layer_crvs.name = 'crvs'
+    layer_crvs.color = { r: 0, g: 255, b: 0, a: 0 }
+    doc.layers().add( layer_crvs )
+
+    // layer index 2
+    const layer_crvs2 = new rhino.Layer()
+    layer_crvs2.name = 'crvs2'
+    layer_crvs2.color = { r: 255, g: 0, b: 0, a: 0 }
+    doc.layers().add( layer_crvs2 )
+
+    // layer index 3
+    const layer_crvs3 = new rhino.Layer()
+    layer_crvs3.name = 'crvs3'
+    layer_crvs3.color = { r: 0, g: 0, b: 255, a: 0 }
+    doc.layers().add( layer_crvs3 )
+
 
     // hide spinner
     document.getElementById('loader').style.display = 'none'
@@ -73,17 +89,9 @@ async function compute() {
                 const rhinoObject = rhino.CommonObject.decode(data)
                 
                 const oa_curves = new rhino.ObjectAttributes()
-                oa_curves.layerIndex = 2
-                //oa_curves.setUserString("Color", "Red") 
-                console.log(oa_curves)
-                const col = {
-                    a: 255,
-                    b: 20,
-                    g: 20,
-                    r: 26,
-                }
-                
-                oa_curves.plotColor = col
+
+                //add to layer index
+                oa_curves.layerIndex = i+1
                 doc.objects().add(rhinoObject, oa_curves)
 
             }
@@ -102,17 +110,6 @@ async function compute() {
 
     const buffer = new Uint8Array(doc.toByteArray()).buffer
     loader.parse(buffer, function (object) {
-
-        // clear objects from scene
-        object.traverse(child => {
-            if (child.hasOwnProperty('Color')){
-                //console.log(typeof child)
-                //console.log(child.geometry().getUserStrings())
-                console.log(2)
-
-            }
-        })
-
 
 
         scene.add(object)

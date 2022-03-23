@@ -1,23 +1,25 @@
 // Import libraries
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.126.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/controls/OrbitControls.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.137.5/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/controls/OrbitControls.js";
 import rhino3dm from "https://cdn.jsdelivr.net/npm/rhino3dm@7.11.1/rhino3dm.module.js";
 import { RhinoCompute } from "https://cdn.jsdelivr.net/npm/compute-rhino3d@0.13.0-beta/compute.rhino3d.module.js";
-import { Rhino3dmLoader } from "https://cdn.jsdelivr.net/npm/three@0.124.0/examples/jsm/loaders/3DMLoader.js";
+import { Rhino3dmLoader } from "https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/loaders/3DMLoader.js";
 
-const definitionName = "test2.gh";
+
+const definitionName = "rnd_node.gh";
 
 // Set up sliders
-const Min_slider = document.getElementById("Min");
-Min_slider.addEventListener("mouseup", onSliderChange, false);
-Min_slider.addEventListener("touchend", onSliderChange, false);
+const radius_slider = document.getElementById("radius");
+radius_slider.addEventListener("mouseup", onSliderChange, false);
+radius_slider.addEventListener("touchend", onSliderChange, false);
 
-const Max_slider = document.getElementById("Max");
-Max_slider.addEventListener("mouseup", onSliderChange, false);
-Max_slider.addEventListener("touchend", onSliderChange, false);
+const count_slider = document.getElementById("count");
+count_slider.addEventListener("mouseup", onSliderChange, false);
+count_slider.addEventListener("touchend", onSliderChange, false);
 
 const loader = new Rhino3dmLoader();
-loader.setLibraryPath("https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/");
+loader.setLibraryPath("https://cdn.jsdelivr.net/npm/rhino3dm@7.11.1/");
+
 
 let rhino, definition, doc;
 rhino3dm().then(async (m) => {
@@ -27,13 +29,7 @@ rhino3dm().then(async (m) => {
   //RhinoCompute.url = getAuth( 'RHINO_COMPUTE_URL' ) // RhinoCompute server url. Use http://localhost:8081 if debugging locally.
   //RhinoCompute.apiKey = getAuth( 'RHINO_COMPUTE_KEY' )  // RhinoCompute server api key. Leave blank if debugging locally.
 
-
-  RhinoCompute.url = 'http://18.197.227.78:80/' // RhinoCompute server url. Use http://localhost:8081 if debugging locally.
-  RhinoCompute.apiKey = 'macad2022'  // RhinoCompute server api key. Leave blank if debugging locally.
-
-
-
-  //RhinoCompute.url = "http://localhost:8081/"; //if debugging locally.
+  RhinoCompute.url = "http://localhost:8081/"; //if debugging locally.
 
   // load a grasshopper file!
 
@@ -48,11 +44,11 @@ rhino3dm().then(async (m) => {
 });
 
 async function compute() {
-  const param1 = new RhinoCompute.Grasshopper.DataTree("Min");
-  param1.append([0], [Min_slider.valueAsNumber]);
+  const param1 = new RhinoCompute.Grasshopper.DataTree("Radius");
+  param1.append([0], [radius_slider.valueAsNumber]);
 
-  const param2 = new RhinoCompute.Grasshopper.DataTree("Max");
-  param2.append([0], [Max_slider.valueAsNumber]);
+  const param2 = new RhinoCompute.Grasshopper.DataTree("Count");
+  param2.append([0], [count_slider.valueAsNumber]);
 
   // clear values
   const trees = [];
@@ -84,24 +80,6 @@ async function compute() {
   }
 
 
-
-  // go through the objects in the Rhino document
-
-  let objects = doc.objects();
-  for ( let i = 0; i < objects.count; i++ ) {
-  
-    const rhinoObject = objects.get( i );
-
-
-     // asign geometry userstrings to object attributes
-    if ( rhinoObject.geometry().userStringCount > 0 ) {
-      const g_userStrings = rhinoObject.geometry().getUserStrings()
-      rhinoObject.attributes().setUserString(g_userStrings[0][0], g_userStrings[0][1])
-      
-    }
-  }
-
-
   // clear objects from scene
   scene.traverse((child) => {
     if (!child.isLight) {
@@ -120,16 +98,16 @@ async function compute() {
         if (child.userData.attributes.geometry.userStringCount > 0) {
           
           //get color from userStrings
-          const colorData = child.userData.attributes.userStrings[0]
+          const colorData = child.userData.attributes.geometry.userStrings[0]
           const col = colorData[1];
 
           //convert color from userstring to THREE color and assign it
-          //const threeColor = new THREE.Color("rgb(" + col + ")");
-          //const mat = new THREE.MeshBasicMaterial({ color: threeColor });
-          const mat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+          const threeColor = new THREE.Color("rgb(" + col + ")");
+          const mat = new THREE.LineBasicMaterial({ color: threeColor });
           child.material = mat;
         }
       }
+      
     });
 
     ///////////////////////////////////////////////////////////////////////
@@ -196,4 +174,16 @@ function meshToThreejs(mesh, material) {
   const loader = new THREE.BufferGeometryLoader();
   const geometry = loader.parse(mesh.toThreejsJSON());
   return new THREE.Mesh(geometry, material);
+}
+
+function getAuth( key ) {
+  let value = localStorage[key]
+  if ( value === undefined ) {
+      const prompt = key.includes('URL') ? 'Server URL' : 'Server API Key'
+      value = window.prompt('RhinoCompute ' + prompt)
+      if ( value !== null ) {
+          localStorage.setItem( key, value )
+      }
+  }
+  return value
 }

@@ -1,23 +1,22 @@
 // Import libraries
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.126.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/controls/OrbitControls.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.137.5/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/controls/OrbitControls.js";
 import rhino3dm from "https://cdn.jsdelivr.net/npm/rhino3dm@7.11.1/rhino3dm.module.js";
 import { RhinoCompute } from "https://cdn.jsdelivr.net/npm/compute-rhino3d@0.13.0-beta/compute.rhino3d.module.js";
-import { Rhino3dmLoader } from "https://cdn.jsdelivr.net/npm/three@0.124.0/examples/jsm/loaders/3DMLoader.js";
+import { Rhino3dmLoader } from "https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/loaders/3DMLoader.js";
 
-const definitionName = "test2.gh";
 
-// Set up sliders
-const Min_slider = document.getElementById("Min");
-Min_slider.addEventListener("mouseup", onSliderChange, false);
-Min_slider.addEventListener("touchend", onSliderChange, false);
+const definitionName = "plane.gh";
+const model = 'world.3dm'
 
-const Max_slider = document.getElementById("Max");
-Max_slider.addEventListener("mouseup", onSliderChange, false);
-Max_slider.addEventListener("touchend", onSliderChange, false);
+
+const count_slider = document.getElementById("count");
+count_slider.addEventListener("mouseup", onSliderChange, false);
+count_slider.addEventListener("touchend", onSliderChange, false);
 
 const loader = new Rhino3dmLoader();
-loader.setLibraryPath("https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/");
+loader.setLibraryPath("https://cdn.jsdelivr.net/npm/rhino3dm@7.11.1/");
+
 
 let rhino, definition, doc;
 rhino3dm().then(async (m) => {
@@ -27,13 +26,7 @@ rhino3dm().then(async (m) => {
   //RhinoCompute.url = getAuth( 'RHINO_COMPUTE_URL' ) // RhinoCompute server url. Use http://localhost:8081 if debugging locally.
   //RhinoCompute.apiKey = getAuth( 'RHINO_COMPUTE_KEY' )  // RhinoCompute server api key. Leave blank if debugging locally.
 
-
-  RhinoCompute.url = 'http://18.197.227.78:80/' // RhinoCompute server url. Use http://localhost:8081 if debugging locally.
-  RhinoCompute.apiKey = 'macad2022'  // RhinoCompute server api key. Leave blank if debugging locally.
-
-
-
-  //RhinoCompute.url = "http://localhost:8081/"; //if debugging locally.
+  RhinoCompute.url = "http://localhost:8081/"; //if debugging locally.
 
   // load a grasshopper file!
 
@@ -48,16 +41,14 @@ rhino3dm().then(async (m) => {
 });
 
 async function compute() {
-  const param1 = new RhinoCompute.Grasshopper.DataTree("Min");
-  param1.append([0], [Min_slider.valueAsNumber]);
 
-  const param2 = new RhinoCompute.Grasshopper.DataTree("Max");
-  param2.append([0], [Max_slider.valueAsNumber]);
+  const param1= new RhinoCompute.Grasshopper.DataTree("fly");
+  console.log(count_slider.valueAsNumber)
+  param1.append([0], [count_slider.valueAsNumber]);
 
   // clear values
   const trees = [];
   trees.push(param1);
-  trees.push(param2);
 
   const res = await RhinoCompute.Grasshopper.evaluateDefinition(
     definition,
@@ -67,11 +58,17 @@ async function compute() {
 
   //console.log(res);
 
-  doc = new rhino.File3dm();
+  // doc = new rhino.File3dm;
+  //const url = model
+  //const res1 = await fetch(url)
+  //const buffer1 = await res1.arrayBuffer()
+  //doc = rhino.File3dm.fromByteArray(new Uint8Array(buffer1))
 
   // hide spinner
   document.getElementById("loader").style.display = "none";
 
+
+ doc = new rhino.File3dm;
   //decode grasshopper objects and put them into a rhino document
   for (let i = 0; i < res.values.length; i++) {
     for (const [key, value] of Object.entries(res.values[i].InnerTree)) {
@@ -85,28 +82,11 @@ async function compute() {
 
 
 
-  // go through the objects in the Rhino document
-
-  let objects = doc.objects();
-  for ( let i = 0; i < objects.count; i++ ) {
-  
-    const rhinoObject = objects.get( i );
-
-
-     // asign geometry userstrings to object attributes
-    if ( rhinoObject.geometry().userStringCount > 0 ) {
-      const g_userStrings = rhinoObject.geometry().getUserStrings()
-      rhinoObject.attributes().setUserString(g_userStrings[0][0], g_userStrings[0][1])
-      
-    }
-  }
-
-
   // clear objects from scene
   scene.traverse((child) => {
-    if (!child.isLight) {
-      scene.remove(child);
-    }
+    console.log(child)
+    if(!child.isLight && child.hasOwnProperty("keep") && child !== undefined) scene.remove(child)
+
   });
 
   const buffer = new Uint8Array(doc.toByteArray()).buffer;
@@ -115,21 +95,8 @@ async function compute() {
     // go through all objects, check for userstrings and assing colors
 
     object.traverse((child) => {
-      if (child.isLine) {
-
-        if (child.userData.attributes.geometry.userStringCount > 0) {
-          
-          //get color from userStrings
-          const colorData = child.userData.attributes.userStrings[0]
-          const col = colorData[1];
-
-          //convert color from userstring to THREE color and assign it
-          //const threeColor = new THREE.Color("rgb(" + col + ")");
-          //const mat = new THREE.MeshBasicMaterial({ color: threeColor });
-          const mat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-          child.material = mat;
-        }
-      }
+      child.keep = false
+      
     });
 
     ///////////////////////////////////////////////////////////////////////
@@ -141,7 +108,7 @@ async function compute() {
 
 function onSliderChange() {
   // show spinner
-  document.getElementById("loader").style.display = "block";
+  //document.getElementById("loader").style.display = "block";
   compute();
 }
 
@@ -150,6 +117,9 @@ function onSliderChange() {
 let scene, camera, renderer, controls;
 
 function init() {
+
+
+
   // create a scene and a camera
   scene = new THREE.Scene();
   scene.background = new THREE.Color(1, 1, 1);
@@ -177,6 +147,33 @@ function init() {
   const ambientLight = new THREE.AmbientLight();
   scene.add(ambientLight);
 
+
+
+  // load the model
+  const loader = new Rhino3dmLoader()
+  loader.setLibraryPath( 'https://cdn.jsdelivr.net/npm/rhino3dm@0.13.0/' )
+
+  loader.load( model, function ( object ) {
+
+      // uncomment to hide spinner when model loads
+      // document.getElementById('loader').remove()
+      scene.add( object )
+      scene.traverse((child, i) => {
+        //if (object.userData.attributes !== undefined) 
+        if (child.type === "Mesh" && child.userData.attributes.userStringCount > 0){
+       
+          // get user strings
+          let data, count
+          data = child.userData.attributes.userStrings[0]
+          if (data[0] == "world") child.material.color.set( 'blue' )
+          if (data[0] == "geo") child.material.color.set( 'green' )
+          
+          //console.log(child)
+        }
+    });
+
+  } )
+
   animate();
 }
 
@@ -196,4 +193,16 @@ function meshToThreejs(mesh, material) {
   const loader = new THREE.BufferGeometryLoader();
   const geometry = loader.parse(mesh.toThreejsJSON());
   return new THREE.Mesh(geometry, material);
+}
+
+function getAuth( key ) {
+  let value = localStorage[key]
+  if ( value === undefined ) {
+      const prompt = key.includes('URL') ? 'Server URL' : 'Server API Key'
+      value = window.prompt('RhinoCompute ' + prompt)
+      if ( value !== null ) {
+          localStorage.setItem( key, value )
+      }
+  }
+  return value
 }

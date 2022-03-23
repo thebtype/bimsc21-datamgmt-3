@@ -44,7 +44,7 @@ async function compute() {
 
 
     const param1 = new RhinoCompute.Grasshopper.DataTree('subdivision')
-    console.log(sub_slider.valueAsNumber)
+    //console.log(sub_slider.valueAsNumber)
     param1.append([0], [sub_slider.valueAsNumber])
 
 
@@ -152,3 +152,15 @@ function meshToThreejs(mesh, material) {
     const geometry = loader.parse(mesh.toThreejsJSON())
     return new THREE.Mesh(geometry, material)
 }
+
+function getAuth( key ) {
+    let value = localStorage[key]
+    if ( value === undefined ) {
+        const prompt = key.includes('URL') ? 'Server URL' : 'Server API Key'
+        value = window.prompt('RhinoCompute ' + prompt)
+        if ( value !== null ) {
+            localStorage.setItem( key, value )
+        }
+    }
+    return value
+  }

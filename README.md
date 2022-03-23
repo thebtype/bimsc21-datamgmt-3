@@ -7,6 +7,10 @@ These examples introduce how to use RhinoCompute as a remote geometry calculatio
 - [Example 1](example1): Boolean Union with RhinoCompute
 - [Example 2](example2): Local Solving GH definitions
 - [Example 3](example3): Local Solving GH definitions with plugin
+- [Example 4](example4): Adds objects to layers in the RhinoDoc
+- [Example 5](example5): How to use the latest version of three
+
+
 
 
 ## References
